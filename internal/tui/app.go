@@ -167,6 +167,20 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 
+		if m.state == StateSearch && m.search.input.Focused() {
+			switch msg.String() {
+			case "ctrl+c":
+				return m, tea.Quit
+			case "esc":
+				m.state = m.prevState
+				return m, nil
+			default:
+				var cmd tea.Cmd
+				m.search, cmd = m.search.Update(msg)
+				return m, cmd
+			}
+		}
+
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit

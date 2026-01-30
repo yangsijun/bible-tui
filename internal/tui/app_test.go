@@ -74,10 +74,22 @@ func TestAppKeyB(t *testing.T) {
 	m := New(nil)
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'/'}})
 	model := updated.(AppModel)
+	model.search.input.Blur()
 	updated2, _ := model.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'b'}})
 	model2 := updated2.(AppModel)
 	if model2.state != StateBookList {
 		t.Errorf("expected StateBookList, got %d", model2.state)
+	}
+}
+
+func TestAppSearchInputAbsorbsKeys(t *testing.T) {
+	m := New(nil)
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'/'}})
+	model := updated.(AppModel)
+	updated2, _ := model.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'p'}})
+	model2 := updated2.(AppModel)
+	if model2.state != StateSearch {
+		t.Errorf("expected StateSearch (input absorbs 'p'), got %d", model2.state)
 	}
 }
 
