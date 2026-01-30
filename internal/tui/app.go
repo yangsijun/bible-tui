@@ -6,6 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
+	"github.com/sijun-dong/bible-tui/internal/bible"
 	"github.com/sijun-dong/bible-tui/internal/db"
 	"github.com/sijun-dong/bible-tui/internal/tui/styles"
 )
@@ -35,6 +36,9 @@ type AppModel struct {
 	bookList    BookListModel
 	chapterList ChapterListModel
 	reading     ReadingModel
+	search      SearchModel
+	bookmarks   BookmarkModel
+	help        HelpModel
 }
 
 func New(database *db.DB) AppModel {
@@ -89,6 +93,36 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.reading, cmd = m.reading.Update(msg)
 		return m, cmd
 
+	case SearchResultsMsg:
+		var cmd tea.Cmd
+		m.search, cmd = m.search.Update(msg)
+		return m, cmd
+
+	case BookmarksLoadedMsg:
+		var cmd tea.Cmd
+		m.bookmarks, cmd = m.bookmarks.Update(msg)
+		return m, cmd
+
+	case BookmarkDeletedMsg:
+		var cmd tea.Cmd
+		m.bookmarks, cmd = m.bookmarks.Update(msg)
+		return m, cmd
+
+	case GoToVerseMsg:
+		book := findBookByCode(msg.BookCode)
+		if book != nil {
+			contentHeight := m.height - 3
+			if contentHeight < 1 {
+				contentHeight = 1
+			}
+			m.reading = NewReading(*book, msg.Chapter, m.theme, m.width, contentHeight)
+			m.state = StateReading
+			if m.db != nil {
+				return m, LoadVerses(m.db, msg.BookCode, msg.Chapter)
+			}
+		}
+		return m, nil
+
 	case tea.KeyMsg:
 		if m.state == StateBookList && m.bookList.list.SettingFilter() {
 			var cmd tea.Cmd
@@ -107,14 +141,20 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.state != StateHelp {
 				m.prevState = m.state
 				m.state = StateHelp
+				contentHeight := m.height - 3
+				if contentHeight < 1 {
+					contentHeight = 1
+				}
+				m.help = NewHelp(m.theme, m.width, contentHeight)
 			}
 			return m, nil
 		case "esc":
-			if m.state == StateHelp {
+			switch m.state {
+			case StateHelp, StateSearch, StateBookmarks:
 				m.state = m.prevState
-			} else if m.state == StateReading {
+			case StateReading:
 				m.state = StateChapterList
-			} else if m.state != StateBookList {
+			case StateChapterList:
 				m.state = StateBookList
 			}
 			return m, nil
@@ -127,12 +167,24 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.state != StateSearch {
 				m.prevState = m.state
 				m.state = StateSearch
+				contentHeight := m.height - 3
+				if contentHeight < 1 {
+					contentHeight = 1
+				}
+				m.search = NewSearch(m.db, m.theme, m.width, contentHeight)
+				return m, m.search.input.Focus()
 			}
 			return m, nil
 		case "m":
 			if m.state != StateBookmarks {
 				m.prevState = m.state
 				m.state = StateBookmarks
+				contentHeight := m.height - 3
+				if contentHeight < 1 {
+					contentHeight = 1
+				}
+				m.bookmarks = NewBookmarks(m.db, m.theme, m.width, contentHeight)
+				return m, LoadBookmarks(m.db)
 			}
 			return m, nil
 		}
@@ -149,6 +201,18 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case StateReading:
 			var cmd tea.Cmd
 			m.reading, cmd = m.reading.Update(msg)
+			return m, cmd
+		case StateSearch:
+			var cmd tea.Cmd
+			m.search, cmd = m.search.Update(msg)
+			return m, cmd
+		case StateBookmarks:
+			var cmd tea.Cmd
+			m.bookmarks, cmd = m.bookmarks.Update(msg)
+			return m, cmd
+		case StateHelp:
+			var cmd tea.Cmd
+			m.help, cmd = m.help.Update(msg)
 			return m, cmd
 		}
 	}
@@ -169,11 +233,11 @@ func (m AppModel) View() string {
 	case StateReading:
 		content = m.reading.View()
 	case StateHelp:
-		content = "도움말\n\nq, Ctrl+C  종료\n?          도움말\nb          책 목록\n/          검색\nm          책갈피\nEsc        이전 화면"
+		content = m.help.View()
 	case StateSearch:
-		content = "검색 (구현 예정)"
+		content = m.search.View()
 	case StateBookmarks:
-		content = "책갈피 (구현 예정)"
+		content = m.bookmarks.View()
 	default:
 		content = m.bookList.View()
 	}
@@ -207,6 +271,15 @@ func (m AppModel) renderLayout(content string) string {
 		Width(m.width)
 
 	return header + "\n" + contentStyle.Render(content) + "\n" + statusBar
+}
+
+func findBookByCode(code string) *bible.BookInfo {
+	for _, b := range bible.AllBooks() {
+		if b.Code == code {
+			return &b
+		}
+	}
+	return nil
 }
 
 func (m AppModel) stateLabel() string {
