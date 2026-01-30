@@ -320,3 +320,46 @@ func (d *DB) SetSetting(key, value string) error {
 	}
 	return nil
 }
+
+// GetCrawlStatus returns the status of a specific chapter crawl.
+// Returns "" if no row exists.
+func (d *DB) GetCrawlStatus(versionCode, bookCode string, chapter int) (string, error) {
+	var status string
+	err := d.conn.QueryRow(
+		"SELECT status FROM crawl_status WHERE version_code = ? AND book_code = ? AND chapter = ?",
+		versionCode, bookCode, chapter,
+	).Scan(&status)
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
+	if err != nil {
+		return "", fmt.Errorf("get crawl status: %w", err)
+	}
+	return status, nil
+}
+
+// SetCrawlStatus upserts the crawl status for a chapter.
+func (d *DB) SetCrawlStatus(versionCode, bookCode string, chapter int, status string, verseCount int, errorMsg string) error {
+	_, err := d.conn.Exec(
+		`INSERT OR REPLACE INTO crawl_status (version_code, book_code, chapter, status, verse_count, crawled_at, error_msg)
+		 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)`,
+		versionCode, bookCode, chapter, status, verseCount, errorMsg,
+	)
+	if err != nil {
+		return fmt.Errorf("set crawl status: %w", err)
+	}
+	return nil
+}
+
+// CountCrawlDone returns the number of chapters with status='done' for a version.
+func (d *DB) CountCrawlDone(versionCode string) (int, error) {
+	var count int
+	err := d.conn.QueryRow(
+		"SELECT COUNT(*) FROM crawl_status WHERE version_code = ? AND status = 'done'",
+		versionCode,
+	).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("count crawl done: %w", err)
+	}
+	return count, nil
+}
