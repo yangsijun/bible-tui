@@ -39,6 +39,8 @@ type AppModel struct {
 	search      SearchModel
 	bookmarks   BookmarkModel
 	help        HelpModel
+	settings    SettingsModel
+	plans       PlanModel
 }
 
 func New(database *db.DB) AppModel {
@@ -108,6 +110,41 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.bookmarks, cmd = m.bookmarks.Update(msg)
 		return m, cmd
 
+	case SettingsLoadedMsg:
+		var cmd tea.Cmd
+		m.settings, cmd = m.settings.Update(msg)
+		return m, cmd
+
+	case SettingsSavedMsg:
+		var cmd tea.Cmd
+		m.settings, cmd = m.settings.Update(msg)
+		m.state = m.prevState
+		return m, cmd
+
+	case ThemeChangedMsg:
+		m.theme = msg.Theme
+		return m, nil
+
+	case PlansLoadedMsg:
+		var cmd tea.Cmd
+		m.plans, cmd = m.plans.Update(msg)
+		return m, cmd
+
+	case PlanEntriesLoadedMsg:
+		var cmd tea.Cmd
+		m.plans, cmd = m.plans.Update(msg)
+		return m, cmd
+
+	case PlanCreatedMsg:
+		var cmd tea.Cmd
+		m.plans, cmd = m.plans.Update(msg)
+		return m, cmd
+
+	case EntryCompletedMsg:
+		var cmd tea.Cmd
+		m.plans, cmd = m.plans.Update(msg)
+		return m, cmd
+
 	case GoToVerseMsg:
 		book := findBookByCode(msg.BookCode)
 		if book != nil {
@@ -150,7 +187,9 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "esc":
 			switch m.state {
-			case StateHelp, StateSearch, StateBookmarks:
+			case StateHelp, StateSearch, StateBookmarks, StateSettings:
+				m.state = m.prevState
+			case StatePlans:
 				m.state = m.prevState
 			case StateReading:
 				m.state = StateChapterList
@@ -187,6 +226,30 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, LoadBookmarks(m.db)
 			}
 			return m, nil
+		case "s":
+			if m.state != StateSettings && m.state != StateSearch {
+				m.prevState = m.state
+				m.state = StateSettings
+				contentHeight := m.height - 3
+				if contentHeight < 1 {
+					contentHeight = 1
+				}
+				m.settings = NewSettings(m.db, m.theme, m.width, contentHeight)
+				return m, LoadSettings(m.db)
+			}
+			return m, nil
+		case "p":
+			if m.state != StatePlans {
+				m.prevState = m.state
+				m.state = StatePlans
+				contentHeight := m.height - 3
+				if contentHeight < 1 {
+					contentHeight = 1
+				}
+				m.plans = NewPlans(m.db, m.theme, m.width, contentHeight)
+				return m, LoadPlans(m.db)
+			}
+			return m, nil
 		}
 
 		switch m.state {
@@ -214,6 +277,14 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			var cmd tea.Cmd
 			m.help, cmd = m.help.Update(msg)
 			return m, cmd
+		case StateSettings:
+			var cmd tea.Cmd
+			m.settings, cmd = m.settings.Update(msg)
+			return m, cmd
+		case StatePlans:
+			var cmd tea.Cmd
+			m.plans, cmd = m.plans.Update(msg)
+			return m, cmd
 		}
 	}
 	return m, nil
@@ -238,6 +309,10 @@ func (m AppModel) View() string {
 		content = m.search.View()
 	case StateBookmarks:
 		content = m.bookmarks.View()
+	case StateSettings:
+		content = m.settings.View()
+	case StatePlans:
+		content = m.plans.View()
 	default:
 		content = m.bookList.View()
 	}
@@ -259,7 +334,7 @@ func (m AppModel) renderLayout(content string) string {
 		Padding(0, 1)
 
 	label := m.stateLabel()
-	hints := "q:종료 ?:도움말 b:책목록 /:검색 m:책갈피"
+	hints := "q:종료 ?:도움말 b:책목록 /:검색 m:책갈피 s:설정 p:읽기계획"
 	statusBar := statusStyle.Render(fmt.Sprintf("%s  │  %s", label, hints))
 
 	contentHeight := m.height - 3
