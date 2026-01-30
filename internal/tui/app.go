@@ -24,21 +24,25 @@ const (
 )
 
 type AppModel struct {
-	state     AppState
-	prevState AppState
-	db        *db.DB
-	theme     *styles.Theme
-	width     int
-	height    int
-	ready     bool
-	statusMsg string
+	state       AppState
+	prevState   AppState
+	db          *db.DB
+	theme       *styles.Theme
+	width       int
+	height      int
+	ready       bool
+	statusMsg   string
+	bookList    BookListModel
+	chapterList ChapterListModel
+	reading     ReadingModel
 }
 
 func New(database *db.DB) AppModel {
 	return AppModel{
-		state: StateBookList,
-		db:    database,
-		theme: styles.DefaultDarkTheme(),
+		state:    StateBookList,
+		db:       database,
+		theme:    styles.DefaultDarkTheme(),
+		bookList: NewBookList(80, 24),
 	}
 }
 
@@ -52,12 +56,53 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.ready = true
+		contentHeight := m.height - 3
+		if contentHeight < 1 {
+			contentHeight = 1
+		}
+		m.bookList.list.SetSize(msg.Width, contentHeight)
 		return m, nil
 
+	case BookSelectedMsg:
+		contentHeight := m.height - 3
+		if contentHeight < 1 {
+			contentHeight = 1
+		}
+		m.chapterList = NewChapterList(msg.Book, m.theme, m.width, contentHeight)
+		m.state = StateChapterList
+		return m, nil
+
+	case ChapterSelectedMsg:
+		contentHeight := m.height - 3
+		if contentHeight < 1 {
+			contentHeight = 1
+		}
+		m.reading = NewReading(msg.Book, msg.Chapter, m.theme, m.width, contentHeight)
+		m.state = StateReading
+		if m.db != nil {
+			return m, LoadVerses(m.db, msg.Book.Code, msg.Chapter)
+		}
+		return m, nil
+
+	case VersesLoadedMsg:
+		var cmd tea.Cmd
+		m.reading, cmd = m.reading.Update(msg)
+		return m, cmd
+
 	case tea.KeyMsg:
+		if m.state == StateBookList && m.bookList.list.SettingFilter() {
+			var cmd tea.Cmd
+			m.bookList, cmd = m.bookList.Update(msg)
+			return m, cmd
+		}
+
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c":
 			return m, tea.Quit
+		case "q":
+			if m.state != StateSearch {
+				return m, tea.Quit
+			}
 		case "?":
 			if m.state != StateHelp {
 				m.prevState = m.state
@@ -67,6 +112,8 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc":
 			if m.state == StateHelp {
 				m.state = m.prevState
+			} else if m.state == StateReading {
+				m.state = StateChapterList
 			} else if m.state != StateBookList {
 				m.state = StateBookList
 			}
@@ -89,6 +136,21 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		}
+
+		switch m.state {
+		case StateBookList:
+			var cmd tea.Cmd
+			m.bookList, cmd = m.bookList.Update(msg)
+			return m, cmd
+		case StateChapterList:
+			var cmd tea.Cmd
+			m.chapterList, cmd = m.chapterList.Update(msg)
+			return m, cmd
+		case StateReading:
+			var cmd tea.Cmd
+			m.reading, cmd = m.reading.Update(msg)
+			return m, cmd
+		}
 	}
 	return m, nil
 }
@@ -101,7 +163,11 @@ func (m AppModel) View() string {
 	var content string
 	switch m.state {
 	case StateBookList:
-		content = "책 목록 (구현 예정)"
+		content = m.bookList.View()
+	case StateChapterList:
+		content = m.chapterList.View()
+	case StateReading:
+		content = m.reading.View()
 	case StateHelp:
 		content = "도움말\n\nq, Ctrl+C  종료\n?          도움말\nb          책 목록\n/          검색\nm          책갈피\nEsc        이전 화면"
 	case StateSearch:
@@ -109,7 +175,7 @@ func (m AppModel) View() string {
 	case StateBookmarks:
 		content = "책갈피 (구현 예정)"
 	default:
-		content = "책 목록 (구현 예정)"
+		content = m.bookList.View()
 	}
 
 	return m.renderLayout(content)
