@@ -164,6 +164,115 @@ func TestSettings(t *testing.T) {
 	}
 }
 
+func TestResetCrawlData_All(t *testing.T) {
+	d := setupTestDB(t)
+	_, bookID := seedTestData(t, d)
+
+	for i := 1; i <= 3; i++ {
+		if _, err := d.InsertVerse(bookID, 1, i, "구절 텍스트", "", false); err != nil {
+			t.Fatalf("InsertVerse: %v", err)
+		}
+	}
+	if err := d.SetCrawlStatus("GAE", "gen", 1, "done", 3, ""); err != nil {
+		t.Fatalf("SetCrawlStatus: %v", err)
+	}
+
+	deleted, err := d.ResetCrawlData("GAE", "")
+	if err != nil {
+		t.Fatalf("ResetCrawlData: %v", err)
+	}
+	if deleted != 3 {
+		t.Errorf("expected 3 deleted verses, got %d", deleted)
+	}
+
+	status, err := d.GetCrawlStatus("GAE", "gen", 1)
+	if err != nil {
+		t.Fatalf("GetCrawlStatus: %v", err)
+	}
+	if status != "" {
+		t.Errorf("expected empty status after reset, got %q", status)
+	}
+
+	verses, err := d.GetVerses("GAE", "gen", 1)
+	if err != nil {
+		t.Fatalf("GetVerses: %v", err)
+	}
+	if len(verses) != 0 {
+		t.Errorf("expected 0 verses after reset, got %d", len(verses))
+	}
+}
+
+func TestResetCrawlData_SingleBook(t *testing.T) {
+	d := setupTestDB(t)
+	vID, bookID := seedTestData(t, d)
+
+	exoID, err := d.InsertBook(vID, "exo", "출애굽기", "출", "old", 40, 2)
+	if err != nil {
+		t.Fatalf("InsertBook: %v", err)
+	}
+
+	if _, err := d.InsertVerse(bookID, 1, 1, "창세기 구절", "", false); err != nil {
+		t.Fatalf("InsertVerse gen: %v", err)
+	}
+	if _, err := d.InsertVerse(exoID, 1, 1, "출애굽기 구절", "", false); err != nil {
+		t.Fatalf("InsertVerse exo: %v", err)
+	}
+	if err := d.SetCrawlStatus("GAE", "gen", 1, "done", 1, ""); err != nil {
+		t.Fatalf("SetCrawlStatus gen: %v", err)
+	}
+	if err := d.SetCrawlStatus("GAE", "exo", 1, "done", 1, ""); err != nil {
+		t.Fatalf("SetCrawlStatus exo: %v", err)
+	}
+
+	deleted, err := d.ResetCrawlData("GAE", "gen")
+	if err != nil {
+		t.Fatalf("ResetCrawlData: %v", err)
+	}
+	if deleted != 1 {
+		t.Errorf("expected 1 deleted verse, got %d", deleted)
+	}
+
+	genVerses, _ := d.GetVerses("GAE", "gen", 1)
+	if len(genVerses) != 0 {
+		t.Errorf("expected 0 gen verses, got %d", len(genVerses))
+	}
+	exoVerses, _ := d.GetVerses("GAE", "exo", 1)
+	if len(exoVerses) != 1 {
+		t.Errorf("expected 1 exo verse preserved, got %d", len(exoVerses))
+	}
+
+	exoStatus, _ := d.GetCrawlStatus("GAE", "exo", 1)
+	if exoStatus != "done" {
+		t.Errorf("expected exo status 'done' preserved, got %q", exoStatus)
+	}
+}
+
+func TestResetCrawlData_WithFootnotes(t *testing.T) {
+	d := setupTestDB(t)
+	_, bookID := seedTestData(t, d)
+
+	verseID, err := d.InsertVerse(bookID, 1, 1, "구절", "", true)
+	if err != nil {
+		t.Fatalf("InsertVerse: %v", err)
+	}
+	if err := d.InsertFootnote(verseID, "1)", "각주 내용"); err != nil {
+		t.Fatalf("InsertFootnote: %v", err)
+	}
+	if err := d.SetCrawlStatus("GAE", "gen", 1, "done", 1, ""); err != nil {
+		t.Fatalf("SetCrawlStatus: %v", err)
+	}
+
+	if _, err := d.ResetCrawlData("GAE", ""); err != nil {
+		t.Fatalf("ResetCrawlData: %v", err)
+	}
+
+	var count int
+	d.conn.QueryRow("SELECT COUNT(*) FROM footnotes").Scan(&count)
+	if count != 0 {
+		t.Errorf("expected 0 footnotes after reset, got %d", count)
+	}
+}
+
 func TestInsertFootnote(t *testing.T) {
 	d := setupTestDB(t)
 	_, bookID := seedTestData(t, d)

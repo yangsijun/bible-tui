@@ -13,6 +13,7 @@ var (
 	crawlVersion string
 	crawlBook    string
 	crawlDryRun  bool
+	crawlReset   bool
 )
 
 var crawlCmd = &cobra.Command{
@@ -26,6 +27,7 @@ func init() {
 	crawlCmd.Flags().StringVar(&crawlVersion, "version", "GAE", "version code")
 	crawlCmd.Flags().StringVar(&crawlBook, "book", "", "specific book code to crawl (empty = all)")
 	crawlCmd.Flags().BoolVar(&crawlDryRun, "dry-run", false, "only create DB schema, don't crawl")
+	crawlCmd.Flags().BoolVar(&crawlReset, "reset", false, "delete crawled data and re-crawl")
 	rootCmd.AddCommand(crawlCmd)
 }
 
@@ -41,13 +43,23 @@ func runCrawl(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("migrate database: %w", err)
 	}
 
-	// If dry-run, just print and return
 	if crawlDryRun {
 		fmt.Fprintf(cmd.OutOrStdout(), "DB 스키마 생성 완료\n")
 		return nil
 	}
 
-	// Create crawler with progress callback
+	if crawlReset {
+		deleted, err := database.ResetCrawlData(crawlVersion, crawlBook)
+		if err != nil {
+			return fmt.Errorf("reset crawl data: %w", err)
+		}
+		target := crawlVersion
+		if crawlBook != "" {
+			target += "/" + crawlBook
+		}
+		fmt.Fprintf(cmd.OutOrStdout(), "%s 크롤링 데이터 삭제 완료 (구절 %d개)\n", target, deleted)
+	}
+
 	c := crawler.New(
 		database,
 		crawler.WithVersionCode(crawlVersion),

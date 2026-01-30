@@ -351,6 +351,53 @@ func (d *DB) SetCrawlStatus(versionCode, bookCode string, chapter int, status st
 	return nil
 }
 
+func (d *DB) ResetCrawlData(versionCode, bookCode string) (int64, error) {
+	tx, err := d.conn.Begin()
+	if err != nil {
+		return 0, fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback()
+
+	bookFilter := ""
+	var bookArgs []interface{}
+	if bookCode != "" {
+		bookFilter = " AND b.code = ?"
+		bookArgs = []interface{}{versionCode, bookCode}
+	} else {
+		bookArgs = []interface{}{versionCode}
+	}
+
+	bookIDQuery := `SELECT b.id FROM books b JOIN versions v ON v.id = b.version_id WHERE v.code = ?` + bookFilter
+	verseIDQuery := `SELECT id FROM verses WHERE book_id IN (` + bookIDQuery + `)`
+
+	for _, table := range []string{"footnotes", "bookmarks", "highlights"} {
+		if _, err := tx.Exec(`DELETE FROM `+table+` WHERE verse_id IN (`+verseIDQuery+`)`, bookArgs...); err != nil {
+			return 0, fmt.Errorf("delete %s: %w", table, err)
+		}
+	}
+
+	res, err := tx.Exec(`DELETE FROM verses WHERE book_id IN (`+bookIDQuery+`)`, bookArgs...)
+	if err != nil {
+		return 0, fmt.Errorf("delete verses: %w", err)
+	}
+	deleted, _ := res.RowsAffected()
+
+	crawlQuery := `DELETE FROM crawl_status WHERE version_code = ?`
+	crawlArgs := []interface{}{versionCode}
+	if bookCode != "" {
+		crawlQuery += ` AND book_code = ?`
+		crawlArgs = append(crawlArgs, bookCode)
+	}
+	if _, err := tx.Exec(crawlQuery, crawlArgs...); err != nil {
+		return 0, fmt.Errorf("delete crawl_status: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, fmt.Errorf("commit: %w", err)
+	}
+	return deleted, nil
+}
+
 // CountCrawlDone returns the number of chapters with status='done' for a version.
 func (d *DB) CountCrawlDone(versionCode string) (int, error) {
 	var count int
