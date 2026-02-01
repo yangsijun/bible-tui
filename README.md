@@ -43,8 +43,14 @@ go install github.com/yangsijun/bible-tui/cmd/bible@latest
 `bible` 명령어가 안 되면 `~/go/bin`을 PATH에 추가합니다:
 
 ```bash
-echo 'export PATH="$HOME/go/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
+# macOS (zsh)
+echo 'export PATH="$HOME/go/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+
+# Linux (bash)
+echo 'export PATH="$HOME/go/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
+
+# Windows (PowerShell)
+[Environment]::SetEnvironmentVariable("Path", "$env:USERPROFILE\go\bin;$([Environment]::GetEnvironmentVariable('Path', 'User'))", "User")
 ```
 
 ### 소스 빌드
