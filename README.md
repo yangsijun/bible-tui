@@ -40,6 +40,13 @@ sudo mv bible /usr/local/bin/
 go install github.com/yangsijun/bible-tui/cmd/bible@latest
 ```
 
+`bible` 명령어가 안 되면 `~/go/bin`을 PATH에 추가합니다:
+
+```bash
+echo 'export PATH="$HOME/go/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
 ### 소스 빌드
 
 ```bash
