@@ -8,6 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
+	"github.com/sijun-dong/bible-tui/internal/bible"
 	"github.com/sijun-dong/bible-tui/internal/db"
 	"github.com/sijun-dong/bible-tui/internal/tui/styles"
 )
@@ -161,11 +162,47 @@ func (m SearchModel) View() string {
 	return b.String()
 }
 
+func tryParseReference(query string) *GoToVerseMsg {
+	ref, err := bible.ParseReference(query)
+	if err == nil {
+		verse := 1
+		if ref.VerseStart > 0 {
+			verse = ref.VerseStart
+		}
+		return &GoToVerseMsg{BookCode: ref.BookCode, Chapter: ref.Chapter, Verse: verse}
+	}
+
+	trimmed := strings.TrimSpace(query)
+	if book := findBookByInput(trimmed); book != nil {
+		return &GoToVerseMsg{BookCode: book.Code, Chapter: 1, Verse: 1}
+	}
+
+	return nil
+}
+
+func findBookByInput(name string) *bible.BookInfo {
+	if b, ok := bible.GetBookByName(name); ok {
+		return b
+	}
+	if b, ok := bible.GetBookByAbbrev(name); ok {
+		return b
+	}
+	if b, ok := bible.GetBookByCode(strings.ToLower(name)); ok {
+		return b
+	}
+	return nil
+}
+
 func searchVerses(database *db.DB, versionCode, query string, limit int) tea.Cmd {
 	return func() tea.Msg {
 		if database == nil {
 			return SearchResultsMsg{Err: fmt.Errorf("no database")}
 		}
+
+		if msg := tryParseReference(query); msg != nil {
+			return *msg
+		}
+
 		results, err := database.SearchVerses(versionCode, query, limit)
 		return SearchResultsMsg{Results: results, Query: query, Err: err}
 	}

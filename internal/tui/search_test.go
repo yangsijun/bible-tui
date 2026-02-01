@@ -69,6 +69,63 @@ func TestSearchModel_View(t *testing.T) {
 	}
 }
 
+func TestTryParseReference_FullRef(t *testing.T) {
+	msg := tryParseReference("창세기 2")
+	if msg == nil {
+		t.Fatal("expected GoToVerseMsg for '창세기 2'")
+	}
+	if msg.BookCode != "gen" || msg.Chapter != 2 || msg.Verse != 1 {
+		t.Errorf("expected gen/2/1, got %s/%d/%d", msg.BookCode, msg.Chapter, msg.Verse)
+	}
+}
+
+func TestTryParseReference_WithVerse(t *testing.T) {
+	msg := tryParseReference("창 3:3")
+	if msg == nil {
+		t.Fatal("expected GoToVerseMsg for '창 3:3'")
+	}
+	if msg.BookCode != "gen" || msg.Chapter != 3 || msg.Verse != 3 {
+		t.Errorf("expected gen/3/3, got %s/%d/%d", msg.BookCode, msg.Chapter, msg.Verse)
+	}
+}
+
+func TestTryParseReference_BookOnly(t *testing.T) {
+	msg := tryParseReference("창세기")
+	if msg == nil {
+		t.Fatal("expected GoToVerseMsg for '창세기'")
+	}
+	if msg.BookCode != "gen" || msg.Chapter != 1 {
+		t.Errorf("expected gen/1, got %s/%d", msg.BookCode, msg.Chapter)
+	}
+}
+
+func TestTryParseReference_AbbrevOnly(t *testing.T) {
+	msg := tryParseReference("창")
+	if msg == nil {
+		t.Fatal("expected GoToVerseMsg for '창'")
+	}
+	if msg.BookCode != "gen" {
+		t.Errorf("expected gen, got %s", msg.BookCode)
+	}
+}
+
+func TestTryParseReference_TextQuery(t *testing.T) {
+	msg := tryParseReference("사랑")
+	if msg != nil {
+		t.Error("expected nil for plain text query '사랑'")
+	}
+}
+
+func TestTryParseReference_EnglishCode(t *testing.T) {
+	msg := tryParseReference("gen 1")
+	if msg == nil {
+		t.Fatal("expected GoToVerseMsg for 'gen 1'")
+	}
+	if msg.BookCode != "gen" || msg.Chapter != 1 {
+		t.Errorf("expected gen/1, got %s/%d", msg.BookCode, msg.Chapter)
+	}
+}
+
 func TestSearchModel_ViewWithResults(t *testing.T) {
 	m := NewSearch(nil, styles.DefaultDarkTheme(), 80, 24)
 	m.results = []db.SearchResult{
