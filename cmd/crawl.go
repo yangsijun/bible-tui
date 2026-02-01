@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/sijun-dong/bible-tui/internal/crawler"
+	"github.com/yangsijun/bible-tui/internal/crawler"
 )
 
 var (

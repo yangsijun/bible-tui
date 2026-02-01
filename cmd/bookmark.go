@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sijun-dong/bible-tui/internal/bible"
+	"github.com/yangsijun/bible-tui/internal/bible"
 	"github.com/spf13/cobra"
 )
 

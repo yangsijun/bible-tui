@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sijun-dong/bible-tui/internal/tui/styles"
+	"github.com/yangsijun/bible-tui/internal/tui/styles"
 )
 
 func TestHelpModel_Init(t *testing.T) {

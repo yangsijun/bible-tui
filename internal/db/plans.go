@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sijun-dong/bible-tui/internal/bible"
+	"github.com/yangsijun/bible-tui/internal/bible"
 )
 
 type ReadingPlan struct {

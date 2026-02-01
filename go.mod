@@ -1,4 +1,4 @@
-module github.com/sijun-dong/bible-tui
+module github.com/yangsijun/bible-tui
 
 go 1.25.6
 

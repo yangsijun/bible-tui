@@ -5,8 +5,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/sijun-dong/bible-tui/internal/db"
-	"github.com/sijun-dong/bible-tui/internal/tui/styles"
+	"github.com/yangsijun/bible-tui/internal/db"
+	"github.com/yangsijun/bible-tui/internal/tui/styles"
 )
 
 func TestSearchModel_Init(t *testing.T) {

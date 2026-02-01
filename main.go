@@ -1,6 +1,6 @@
 package main
 
-import "github.com/sijun-dong/bible-tui/cmd"
+import "github.com/yangsijun/bible-tui/cmd"
 
 func main() {
 	cmd.Execute()

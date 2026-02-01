@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/sijun-dong/bible-tui/internal/bible"
-	"github.com/sijun-dong/bible-tui/internal/db"
-	"github.com/sijun-dong/bible-tui/internal/tui/styles"
+	"github.com/yangsijun/bible-tui/internal/bible"
+	"github.com/yangsijun/bible-tui/internal/db"
+	"github.com/yangsijun/bible-tui/internal/tui/styles"
 )
 
 func TestReadingModel_VersesLoaded(t *testing.T) {

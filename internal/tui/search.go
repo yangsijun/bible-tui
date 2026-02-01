@@ -8,9 +8,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/sijun-dong/bible-tui/internal/bible"
-	"github.com/sijun-dong/bible-tui/internal/db"
-	"github.com/sijun-dong/bible-tui/internal/tui/styles"
+	"github.com/yangsijun/bible-tui/internal/bible"
+	"github.com/yangsijun/bible-tui/internal/db"
+	"github.com/yangsijun/bible-tui/internal/tui/styles"
 )
 
 type SearchResultsMsg struct {

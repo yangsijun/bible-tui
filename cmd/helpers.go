@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sijun-dong/bible-tui/internal/db"
+	"github.com/yangsijun/bible-tui/internal/db"
 )
 
 var testDB *db.DB // only set in tests

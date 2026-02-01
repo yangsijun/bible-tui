@@ -6,7 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 
-	"github.com/sijun-dong/bible-tui/internal/tui"
+	"github.com/yangsijun/bible-tui/internal/tui"
 )
 
 var tuiCmd = &cobra.Command{

@@ -3,7 +3,7 @@ package cmd
 import (
 	"testing"
 
-	"github.com/sijun-dong/bible-tui/internal/db"
+	"github.com/yangsijun/bible-tui/internal/db"
 )
 
 func setupTestDB(t *testing.T) *db.DB {

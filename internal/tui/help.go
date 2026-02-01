@@ -6,7 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/sijun-dong/bible-tui/internal/tui/styles"
+	"github.com/yangsijun/bible-tui/internal/tui/styles"
 )
 
 type HelpModel struct {

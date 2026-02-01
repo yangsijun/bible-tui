@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sijun-dong/bible-tui/internal/bible"
-	"github.com/sijun-dong/bible-tui/internal/db"
+	"github.com/yangsijun/bible-tui/internal/bible"
+	"github.com/yangsijun/bible-tui/internal/db"
 )
 
 func loadFixture(t *testing.T) string {

@@ -7,8 +7,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/sijun-dong/bible-tui/internal/config"
-	"github.com/sijun-dong/bible-tui/internal/tui/styles"
+	"github.com/yangsijun/bible-tui/internal/config"
+	"github.com/yangsijun/bible-tui/internal/tui/styles"
 )
 
 func newTestSettingsModel() SettingsModel {

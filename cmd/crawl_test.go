@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sijun-dong/bible-tui/internal/db"
+	"github.com/yangsijun/bible-tui/internal/db"
 )
 
 func TestCrawlCommand_DryRun(t *testing.T) {

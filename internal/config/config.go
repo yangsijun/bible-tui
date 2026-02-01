@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/sijun-dong/bible-tui/internal/db"
+	"github.com/yangsijun/bible-tui/internal/db"
 )
 
 type Config struct {

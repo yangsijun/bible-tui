@@ -6,8 +6,8 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/mattn/go-runewidth"
-	"github.com/sijun-dong/bible-tui/internal/bible"
-	"github.com/sijun-dong/bible-tui/internal/db"
+	"github.com/yangsijun/bible-tui/internal/bible"
+	"github.com/yangsijun/bible-tui/internal/db"
 	"github.com/spf13/cobra"
 )
 

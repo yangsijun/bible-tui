@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/sijun-dong/bible-tui/internal/db"
+	"github.com/yangsijun/bible-tui/internal/db"
 )
 
 func TestLoadConfig_Defaults(t *testing.T) {

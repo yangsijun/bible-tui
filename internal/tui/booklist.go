@@ -6,7 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/sijun-dong/bible-tui/internal/bible"
+	"github.com/yangsijun/bible-tui/internal/bible"
 )
 
 type BookSelectedMsg struct {

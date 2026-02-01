@@ -10,9 +10,9 @@ import (
 	"golang.org/x/net/html/charset"
 	"golang.org/x/time/rate"
 
-	"github.com/sijun-dong/bible-tui/internal/bible"
-	"github.com/sijun-dong/bible-tui/internal/db"
-	"github.com/sijun-dong/bible-tui/internal/parser"
+	"github.com/yangsijun/bible-tui/internal/bible"
+	"github.com/yangsijun/bible-tui/internal/db"
+	"github.com/yangsijun/bible-tui/internal/parser"
 )
 
 type Crawler struct {
