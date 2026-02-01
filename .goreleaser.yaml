@@ -8,7 +8,8 @@ before:
     - go test ./...
 
 builds:
-  - env:
+  - main: ./cmd/bible
+    env:
       - CGO_ENABLED=0
     goos:
       - darwin
