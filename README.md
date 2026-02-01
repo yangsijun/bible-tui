@@ -37,7 +37,7 @@ sudo mv bible /usr/local/bin/
 ### Go Install
 
 ```bash
-go install github.com/sijun-dong/bible-tui@latest
+go install github.com/yangsijun/bible-tui@latest
 ```
 
 ### 소스 빌드
