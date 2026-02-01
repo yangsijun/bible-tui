@@ -1,6 +1,6 @@
 # Binaries
-bible
-bible-tui
+/bible
+/bible-tui
 bible-tui.exe
 *.exe
 *.dll
