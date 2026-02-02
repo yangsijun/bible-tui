@@ -10,7 +10,15 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "bible",
 	Short: "성경 TUI/CLI 프로그램",
-	Long:  "대한성서공회 개역개정 성경을 터미널에서 읽고 검색하는 프로그램입니다.",
+	Long:  "성경을 터미널에서 읽고 검색하는 프로그램입니다.",
+}
+
+// SetVersion sets the version info from ldflags
+func SetVersion(version, commit string) {
+	rootCmd.Version = version
+	if commit != "none" && commit != "" {
+		rootCmd.Version = fmt.Sprintf("%s (%s)", version, commit)
+	}
 }
 
 // Execute runs the root command
