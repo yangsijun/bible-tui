@@ -83,7 +83,7 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if contentHeight < 1 {
 			contentHeight = 1
 		}
-		m.reading = NewReading(msg.Book, msg.Chapter, m.theme, m.width, contentHeight)
+		m.reading = NewReading(msg.Book, msg.Chapter, m.db, m.theme, m.width, contentHeight)
 		m.state = StateReading
 		if m.db != nil {
 			return m, LoadVerses(m.db, msg.Book.Code, msg.Chapter)
@@ -152,7 +152,7 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if contentHeight < 1 {
 				contentHeight = 1
 			}
-			m.reading = NewReading(*book, msg.Chapter, m.theme, m.width, contentHeight)
+			m.reading = NewReading(*book, msg.Chapter, m.db, m.theme, m.width, contentHeight)
 			m.state = StateReading
 			if m.db != nil {
 				return m, LoadVerses(m.db, msg.BookCode, msg.Chapter)

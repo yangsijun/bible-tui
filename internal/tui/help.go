@@ -91,9 +91,11 @@ func renderHelpContent(theme *styles.Theme) string {
 	keys4 := [][2]string{
 		{"h, ←", "이전 장"},
 		{"l, →", "다음 장"},
-		{"j, k", "위/아래 스크롤"},
+		{"j, k", "구절 위/아래 이동"},
 		{"g", "맨 위"},
 		{"G", "맨 아래"},
+		{"B", "선택 구절 책갈피"},
+		{"H", "선택 구절 하이라이트"},
 		{"Esc", "장 선택으로"},
 	}
 	for _, kv := range keys4 {
