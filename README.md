@@ -34,7 +34,18 @@ sudo mv bible /usr/local/bin/
 # zip 파일 압축 해제 후 PATH에 추가
 ```
 
+### 소스 빌드
+
+```bash
+git clone https://github.com/yangsijun/bible-tui.git
+cd bible-tui
+go build -o bible ./cmd/bible
+sudo mv bible /usr/local/bin/   # 또는 원하는 PATH 경로
+```
+
 ### Go Install
+
+> **참고**: Go 모듈 프록시 캐시로 인해 새 버전 반영이 지연될 수 있습니다. 최신 버전이 필요하면 GitHub Releases 또는 소스 빌드를 추천합니다.
 
 ```bash
 go install github.com/yangsijun/bible-tui/cmd/bible@latest
@@ -51,14 +62,6 @@ echo 'export PATH="$HOME/go/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
 
 # Windows (PowerShell)
 [Environment]::SetEnvironmentVariable("Path", "$env:USERPROFILE\go\bin;$([Environment]::GetEnvironmentVariable('Path', 'User'))", "User")
-```
-
-### 소스 빌드
-
-```bash
-git clone https://github.com/yangsijun/bible-tui.git
-cd bible-tui
-go build -o bible .
 ```
 
 ## 시작하기
@@ -95,6 +98,8 @@ bible search 사랑         # "사랑" 검색
 bible random              # 랜덤 구절
 bible bookmark list       # 책갈피 목록
 bible highlight list      # 하이라이트 목록
+bible update              # 최신 버전으로 업데이트
+bible --version           # 현재 버전 확인
 ```
 
 ## TUI 키바인딩
